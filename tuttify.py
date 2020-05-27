@@ -13,6 +13,8 @@ description="This script will watch tutti.ch for new ads and notify you via tele
 parser.add_argument('query', metavar="Query", type=str, help='tutti.ch search string')
 parser.add_argument('-c', '--canton', metavar="Canton", type=str, default="ganze-schweiz",
     help="In which canton to look for.")
+parser.add_argument('-co', '--companyad', metavar="AdType", type=str, default="",
+    help="Whether to display company ('true') or private ('false') ads. Leave empty for both.")
 parser.add_argument('-f', '--free', action='store_true', default=False,
     help="To only show listings 'for free'.")
 parser.add_argument('-l', '--lang', metavar="Language", type=str, default="",
@@ -42,6 +44,8 @@ while True:
         if args.neighbor:
             search_url += "/nachbarkantone"
 
+        search_url += "/angebote"
+
         if args.free:
             search_url += "/gratis"
 
@@ -55,6 +59,9 @@ while True:
 
         if args.lang:
             search_url += "&query_lang=" + args.lang
+
+        if args.companyad:
+            search_url += "&company_ad=" + args.companyad
 
         # Download page
         html = urlopen(search_url)
