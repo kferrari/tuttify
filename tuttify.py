@@ -10,9 +10,9 @@ from bs4 import BeautifulSoup
 parser = argparse.ArgumentParser(
 description="This script will watch tutti.ch for new ads and notify you via telegram. Also, it keeps a record of listings with prices in a JSON file."
 )
+parser.add_argument('query', metavar="Query", type=str, help='tutti.ch search string')
 parser.add_argument('-c', '--canton', metavar="Canton", type=str, default="ganze-schweiz",
     help="In which canton to look for.")
-parser.add_argument('-q', '--query', metavar="Query", type=str, help='tutti.ch search string')
 parser.add_argument('-s', '--silent', action='store_true', default=False,
     help="Don't send notifications.")
 parser.add_argument('-m', '--maxprice', metavar="Price", type=int, default=0,

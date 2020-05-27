@@ -17,6 +17,8 @@ Simple run:
 
 ```bash
 python3 tuttify.py -q sofa
+
+python3 tuttify.py -q "raspberry pi 4"
 ```
 
 To run in background:
