@@ -13,10 +13,19 @@ description="This script will watch tutti.ch for new ads and notify you via tele
 parser.add_argument('query', metavar="Query", type=str, help='tutti.ch search string')
 parser.add_argument('-c', '--canton', metavar="Canton", type=str, default="ganze-schweiz",
     help="In which canton to look for.")
+parser.add_argument('-f', '--free', action='store_true', default=False,
+    help="To only show listings 'for free'.")
+parser.add_argument('-l', '--lang', metavar="Language", type=str, default="",
+    help="Which language to use. Must be one of 'de', 'fr' or 'it'.")
+parser.add_argument('-ma', '--maxprice', metavar="maxPrice", type=int, default=0,
+    help="Highest price to still look for.")
+parser.add_argument('-mi', '--minprice', metavar="minPrice", type=int, default=0,
+    help="Lowest price to still look for.")
+parser.add_argument('-n', '--neighbor', action='store_true', default=False,
+    help="To include neighboring cantons. Requires -c to be set.")
 parser.add_argument('-s', '--silent', action='store_true', default=False,
     help="Don't send notifications.")
-parser.add_argument('-m', '--maxprice', metavar="Price", type=int, default=0,
-    help="Highest price to still look for.")
+
 args = parser.parse_args()
 
 # Header for requests
@@ -26,9 +35,28 @@ headers = {
 }
 
 while True:
-    # Download page
     try:
-        search_url = 'https://www.tutti.ch/de/li/' + args.canton.lower() + '?q=' + args.query.lower().replace(" ", "%20")
+        # Build up url with queries
+        search_url = 'https://www.tutti.ch/de/li/' + args.canton.lower()
+
+        if args.neighbor:
+            search_url += "/nachbarkantone"
+
+        if args.free:
+            search_url += "/gratis"
+
+        search_url += "?q=" + args.query.lower().replace(" ", "%20")
+
+        if args.maxprice:
+            search_url += "&pe=" + str(args.maxprice)
+
+        if args.minprice:
+            search_url += "&ps=" + str(args.minprice)
+
+        if args.lang:
+            search_url += "&query_lang=" + args.lang
+
+        # Download page
         html = urlopen(search_url)
         soup = BeautifulSoup(html, features="lxml")
 
@@ -42,14 +70,6 @@ while True:
             title = item.find_all('h4', attrs={"class":"_2SE_L"})[0].get_text()
 
             price = item.find_all('div', attrs={"class":"_6HJe5"})[0].get_text()
-            price_num = price[:-2].replace("'", "")
-
-            try:
-                price_num = int(price_num)
-                isTooExp = (price_num > args.maxprice) and (args.maxprice > 0)
-            except:
-                print("Invalid price. Probably empty.")
-                isTooExp = False
 
             location = item.find_all('span', attrs={"class":"_3f6Er"})[0].get_text()
 
@@ -69,7 +89,7 @@ while True:
 
                 # notify
                 print("New listing...")
-                if (not args.silent) and (not isTooExp):
+                if not args.silent:
                     message = 'Neues Inserat: {} ({}) in {}\n {}'.format(title, price, location, url)
                     telegram_send.send(messages=[message])
 
@@ -90,7 +110,7 @@ while True:
 
                         # notify
                         print("New listing...")
-                        if (not args.silent) and (not isTooExp):
+                        if not args.silent:
                             message = 'Neues Inserat: {} ({}) in {}\n {}'.format(title, price, location, url)
                             telegram_send.send(messages=[message])
 
@@ -102,5 +122,5 @@ while True:
 
     except:
         # Wait half a minute, in case the server isn't reachable
-        print("Server not reachable")
+        print("Server not reachable or other error")
         time.sleep(30)
