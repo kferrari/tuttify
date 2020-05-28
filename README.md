@@ -16,37 +16,43 @@ Use tuttify.py to scrape tutti.ch for new listings and alert you via Telegram.
 Simple run
 
 ```bash
-python3 tuttify.py -q sofa
+python3 tuttify.py sofa
 
-python3 tuttify.py -q "raspberry pi 4"
+python3 tuttify.py "raspberry pi 4"
 ```
 
 To run in background
 
 ```bash
-nohup python3 -u tuttify.py -q sofa &
+nohup python3 -u tuttify.py sofa &
 ```
 
 The first run for each unique query will build a dictionary of existing listings and save it to a JSON file. It also sends a message for each listing. To avoid cluttering of your Telegram conversation, use the `--silent` flag first. Later, re-run without the flag to only be notified about new listings.
 
 ```bash
-python3 tuttify.py -q sofa --silent
+python3 tuttify.py sofa --silent
 ```
 
 To only show listings for free
 
 ```bash
-python3 tuttify.py -q sofa -f
+python3 tuttify.py sofa -f
 ```
 
 To only search a specific canton, use `--canton`. Use `-n` to also include neighboring cantons.
 
 ```bash
-python3 tuttify.py -q sofa --canton graubuenden -n
+python3 tuttify.py sofa --canton graubuenden -n
 ```
 
 To define a price range, use `--maxprice` and/or `--minprice`
 
 ```bash
-python3 tuttify.py -q sofa --canton graubuenden --minprice 10 --maxprice 150
+python3 tuttify.py sofa --minprice 10 --maxprice 150
+```
+
+To only show ads from private sellers, use `--companyad false`
+
+```bash
+python3 tuttify.py sofa --companyad false
 ```
