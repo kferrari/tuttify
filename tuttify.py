@@ -1,6 +1,6 @@
 import telegram_send, time
 import json
-import argparse, os
+import argparse, os, sys
 from datetime import date, timedelta
 
 from urllib.request import urlopen
@@ -69,6 +69,9 @@ while True:
 
         list_all = soup.find_all('div', attrs={"class":"_3aiCi"})
 
+        n_new = 0
+        sys.stdout.write("\r {} new listings".format(n_new))
+
         for item in list_all:
 
             url = item.find_all('a', attrs={"class":"_16dGT"})[0].get("href")
@@ -95,7 +98,9 @@ while True:
                     json.dump(mydict, f)
 
                 # notify
-                print("New listing...")
+                n_new += 1
+                sys.stdout.write("\r {} new listings".format(n_new))
+
                 if not args.silent:
                     message = 'Neues Inserat: {} ({}) in {}\n {}'.format(title, price, location, url)
                     telegram_send.send(messages=[message])
@@ -105,18 +110,19 @@ while True:
                     dic = json.load(f)
 
                     if new_dict in dic["inserate"]:
-                        print("same..")
-
                         # If listing is known, skip all afterwards
                         f.close()
                         break
+
                     else:
                         dic["inserate"].append(new_dict)
                         f.seek(0)
                         json.dump(dic, f)
 
                         # notify
-                        print("New listing...")
+                        n_new += 1
+                        sys.stdout.write("\r {} new listings".format(n_new))
+
                         if not args.silent:
                             message = 'Neues Inserat: {} ({}) in {}\n {}'.format(title, price, location, url)
                             telegram_send.send(messages=[message])
@@ -129,5 +135,5 @@ while True:
 
     except:
         # Wait half a minute, in case the server isn't reachable
-        print("Server not reachable or other error")
+        sys.stdout.write("\rServer not reachable or other error")
         time.sleep(30)
