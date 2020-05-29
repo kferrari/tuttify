@@ -6,6 +6,12 @@ from datetime import date, timedelta
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
+def ad_known(title):
+    for i, d in enumerate(dic["inserate"]):
+        if d["name"] == title:
+            return 1
+    return 0
+
 # Parse arguments
 parser = argparse.ArgumentParser(
 description="This script will watch tutti.ch for new ads and notify you via telegram. Also, it keeps a record of listings with prices in a JSON file."
@@ -67,7 +73,7 @@ while True:
         html = urlopen(search_url)
         soup = BeautifulSoup(html, features="lxml")
 
-        list_all = soup.find_all('div', attrs={"class":"_3aiCi"})
+        list_all = soup.body.find_all('div', attrs={"class":"_3aiCi"})
 
         n_new = 0
         sys.stdout.write("\r {} new listings".format(n_new))
@@ -77,11 +83,14 @@ while True:
             url = item.find_all('a', attrs={"class":"_16dGT"})[0].get("href")
             url = "https://tutti.ch" + url
 
-            title = item.find_all('h4', attrs={"class":"_2SE_L"})[0].get_text()
+            all_text = item.find_all(text=True)
+            all_text[:] = (value for value in all_text if value != " ")
+            all_text[:] = (value for value in all_text if value != ",")
+            all_text[:] = (value for value in all_text if value != ",\xa0")
 
-            price = item.find_all('div', attrs={"class":"_6HJe5"})[0].get_text()
-
-            location = item.find_all('span', attrs={"class":"_3f6Er"})[0].get_text()
+            location = '{} ({})'.format(all_text[0], all_text[1])
+            title = all_text[3]
+            price = all_text[5]
 
             # Create dict for first advertisement
             new_dict = {"name" : title, "url" : url, "price": price, "location": location}
@@ -109,10 +118,9 @@ while True:
                 with open(fname,'r+') as f:
                     dic = json.load(f)
 
-                    if new_dict in dic["inserate"]:
-                        # If listing is known, skip all afterwards
-                        f.close()
-                        break
+                    if ad_known(title):
+                        # do nothing
+                        pass
 
                     else:
                         dic["inserate"].append(new_dict)
