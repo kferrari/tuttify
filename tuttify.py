@@ -89,8 +89,18 @@ while True:
             all_text[:] = (value for value in all_text if value != ",\xa0")
 
             location = all_text[1]
-            title = all_text[5]
-            price = all_text[7].replace(" ", "")
+            title = all_text[6]
+            try:
+                price = all_text[8].replace(" ", "")
+            except:
+                try:
+                    price = all_text[7].replace(" ", "")
+                except:
+                    try:
+                        price = all_text[6].replace(" ", "")
+                    except:
+                        print(all_text)
+                        price = "error"
 
             # Create dict for first advertisement
             new_dict = {"name" : title, "url" : url, "price": price, "location": location}
