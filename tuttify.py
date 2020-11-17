@@ -73,14 +73,14 @@ while True:
         html = urlopen(search_url)
         soup = BeautifulSoup(html, features="lxml")
 
-        list_all = soup.body.find_all('div', attrs={"class":"_3aiCi"})
+        list_all = soup.body.find_all('div', attrs={"class":"p78z0m-0"})
 
         n_new = 0
         sys.stdout.write("\r {} new listings".format(n_new))
 
         for item in list_all:
 
-            url = item.find_all('a', attrs={"class":"_16dGT"})[0].get("href")
+            url = item.find_all('a')[0].get("href")
             url = "https://tutti.ch" + url
 
             all_text = item.find_all(text=True)
@@ -88,9 +88,9 @@ while True:
             all_text[:] = (value for value in all_text if value != ",")
             all_text[:] = (value for value in all_text if value != ",\xa0")
 
-            location = '{} ({})'.format(all_text[0], all_text[1])
-            title = all_text[3]
-            price = all_text[5]
+            location = all_text[1]
+            title = all_text[5]
+            price = all_text[7].replace(" ", "")
 
             # Create dict for first advertisement
             new_dict = {"name" : title, "url" : url, "price": price, "location": location}
